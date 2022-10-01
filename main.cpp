@@ -25,7 +25,8 @@ int main(int argc, char* argv[]) {
 	}
 
 	const char* dev = argv[1];//store interface
-	
+	printf("--------------------------------\n");
+	printf("--------------------------------\n");
 	/*
 		get attacker's mac addr and ip addr
 	*/
@@ -51,8 +52,10 @@ int main(int argc, char* argv[]) {
 		fprintf(stderr, "couldn't open device %s(%s)\n", dev, errbuf);
 		return -1;
 	}
+	printf("--------------------------------\n");
 	int i=2;
 	while(i<argc){
+	printf("--------------------------------\n");
 	reqPacket.eth_.dmac_ = Mac("ff:ff:ff:ff:ff:ff");//broadcast adress to send the packet to all of hosts
 	reqPacket.eth_.smac_ = Mac(mac_buf);
 	reqPacket.eth_.type_ = htons(EthHdr::Arp);
@@ -113,8 +116,10 @@ int main(int argc, char* argv[]) {
 		fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res, pcap_geterr(handle));
 		return -1;
 	}
+	printf("--------------------------------\n");
 	i+=2;
 	}
+	printf("--------------------------------\n");
 
 
 	pcap_close(handle);
